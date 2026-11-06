@@ -1,0 +1,18 @@
+{% macro entry_card(e) %}
+<article class="card" draggable="true" data-entry-id="{{ e.id }}">
+  <header>
+    <span class="badge">{{ e.content_type }}</span>
+    {% for c in e.category or [] %}<span class="badge cat-badge">{{ c }}</span>{% endfor %}
+    {% for t in e.tags %}<span class="tag-pill tag-color-{{ t | tagcolor }}">{{ t }}</span>{% endfor %}
+  </header>
+  <p class="summary">{{ e.summary }}</p>
+  <footer>
+    {% if e.original_url %}<a href="{{ e.original_url }}" target="_blank">🔗 Original</a>{% endif %}
+    <a href="/app/entry/{{ e.id }}">Mehr erfahren →</a>
+    <span class="spacer">{{ e.created_at[:10] }}</span>
+    <form method="post" action="/app/entry/{{ e.id }}/delete" onsubmit="return confirm('Eintrag wirklich löschen?')">
+      <button type="submit" class="delete-link" title="Löschen">🗑</button>
+    </form>
+  </footer>
+</article>
+{% endmacro %}

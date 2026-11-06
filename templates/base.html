@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}Knowledge Hub{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <h2>📚 Knowledge Hub</h2>
+    <form method="get" action="/app">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" name="q" placeholder="Suchen..." value="{{ q or '' }}" list="tag-options" autocomplete="off">
+      </div>
+      <datalist id="tag-options">
+        {% for t in all_tags %}<option value="{{ t }}">{% endfor %}
+      </datalist>
+    </form>
+    <nav>
+      <ul>
+        <li><a href="/app" class="{{ 'active' if nav_active == 'home' else '' }}">🏠 Übersicht</a></li>
+        <li><a href="/app?chapter=private" class="{{ 'active' if nav_active == 'private' else '' }}">🏄🏻‍♂️ Private</a></li>
+      </ul>
+      <p class="nav-section-label">🚀 Work</p>
+      <ul>
+        <li><a href="/app?chapter=work" class="{{ 'active' if nav_active == 'work' else '' }}">Alle Work-Einträge</a></li>
+        <li><a href="/app?chapter=work&category=VC" data-category="VC" class="drop-zone {{ 'active' if nav_active == 'VC' else '' }}">💰 VC</a></li>
+        <li><a href="/app?chapter=work&category=Startup" data-category="Startup" class="drop-zone {{ 'active' if nav_active == 'Startup' else '' }}">🛠️ Startup</a></li>
+        <li><a href="/app?chapter=work&category=People" data-category="People" class="drop-zone {{ 'active' if nav_active == 'People' else '' }}">🧑‍🤝‍🧑 People</a></li>
+      </ul>
+    </nav>
+    <button id="send-digest-btn" class="sidebar-action">📧 Digest jetzt senden</button>
+  </aside>
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script>
+document.querySelectorAll('.card[draggable="true"]').forEach(function (card) {
+  card.addEventListener('dragstart', function (e) {
+    e.dataTransfer.setData('text/plain', card.dataset.entryId);
+    e.dataTransfer.effectAllowed = 'copy';
+  });
+});
+
+document.querySelectorAll('.drop-zone').forEach(function (zone) {
+  zone.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    zone.classList.add('drop-hover');
+  });
+  zone.addEventListener('dragleave', function () {
+    zone.classList.remove('drop-hover');
+  });
+  zone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    zone.classList.remove('drop-hover');
+    var entryId = e.dataTransfer.getData('text/plain');
+    var category = zone.dataset.category;
+    if (!entryId) return;
+    fetch('/app/entry/' + entryId + '/add-category', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'category=' + encodeURIComponent(category),
+    }).then(function (res) {
+      showToast(res.ok ? 'Zu "' + category + '" hinzugefügt' : 'Fehler beim Zuordnen');
+    });
+  });
+});
+
+document.getElementById('send-digest-btn').addEventListener('click', function () {
+  fetch('/app/send-digest-now', { method: 'POST' }).then(function (res) {
+    showToast(res.ok ? 'Digest wird versendet …' : 'Fehler beim Versenden');
+  });
+});
+
+function showToast(message) {
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(function () { toast.classList.add('show'); });
+  setTimeout(function () {
+    toast.classList.remove('show');
+    setTimeout(function () { toast.remove(); }, 300);
+  }, 2000);
+}
+</script>
+</body>
+</html>

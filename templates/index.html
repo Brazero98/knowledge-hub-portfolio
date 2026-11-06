@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import "_card.html" as cards %}
+{% block title %}Knowledge Hub{% endblock %}
+{% block content %}
+{% if mode == "home" %}
+  {% for section in sections %}
+  <section class="section">
+    <div class="section-header">
+      <h2>{{ section.icon }} {{ section.title }}</h2>
+      {% if section.entries %}<a class="see-all" href="{{ section.see_all_url }}">Alle ansehen →</a>{% endif %}
+    </div>
+    {% if section.entries %}
+    <div class="masonry">
+      {% for e in section.entries %}{{ cards.entry_card(e) }}{% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-hint">Noch keine Einträge hier.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+{% else %}
+  <h1>{{ list_title }}</h1>
+  <div class="masonry">
+  {% for e in entries %}{{ cards.entry_card(e) }}{% else %}<p>Keine Einträge gefunden.</p>{% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

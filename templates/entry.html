@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.content_type }} – Knowledge Hub{% endblock %}
+{% block content %}
+<div class="entry-page">
+<a class="back-link" href="/app">← Zurück</a>
+<h1>{{ entry.summary }}</h1>
+<div class="meta-row">
+  <span class="badge">{{ entry.content_type }}</span>
+  {% for c in entry.category or [] %}<span class="badge cat-badge">{{ c }}</span>{% endfor %}
+  {% for t in entry.tags %}<span class="tag-pill tag-color-{{ t | tagcolor }}">{{ t }}</span>{% endfor %}
+</div>
+{% if entry.original_url %}<a class="original-link" href="{{ entry.original_url }}" target="_blank">🔗 Zum Original</a>{% endif %}
+
+{% if entry.chapter == 'work' %}
+<div class="category-toggles">
+  {% for cat in ['VC', 'Startup', 'People'] %}
+  <form method="post" action="/app/entry/{{ entry.id }}/toggle-category">
+    <input type="hidden" name="category" value="{{ cat }}">
+    <button type="submit" class="cat-toggle {{ 'active' if cat in (entry.category or []) else '' }}">{{ cat }}</button>
+  </form>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="detailed">{{ detailed_html | safe }}</div>
+
+<h3>Key Learnings</h3>
+<ul>
+{% for k in entry.key_learnings %}<li>{{ k }}</li>{% endfor %}
+</ul>
+
+<div class="entry-footer-row">
+  <span class="timestamp">Gespeichert am {{ entry.created_at[:10] }} über {{ entry.source }}</span>
+  <form method="post" action="/app/entry/{{ entry.id }}/delete" onsubmit="return confirm('Eintrag wirklich löschen?')">
+    <button type="submit" class="delete-link">🗑 Löschen</button>
+  </form>
+</div>
+</div>
+{% endblock %}

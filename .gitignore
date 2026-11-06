@@ -1,0 +1,12 @@
+# Secrets & local-only
+.env
+sanitize.sh
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Runtime
+*.log
+.claude/settings.local.json
